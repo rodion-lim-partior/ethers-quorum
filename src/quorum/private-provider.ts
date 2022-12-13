@@ -129,8 +129,8 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
       wrappedTxn.hash = hash;
       return this._wrapTransaction(wrappedTxn, hash, blockNumber);
     } catch (error) {
-      (<any>error).transaction = wrappedTxn;
-      (<any>error).transactionHash = wrappedTxn.hash;
+      (error as any).transaction = wrappedTxn;
+      (error as any).transactionHash = wrappedTxn.hash;
       throw error;
     }
   }
@@ -140,7 +140,7 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
     await this.getNetwork();
     const signedTransactionResolved = await Promise.resolve(signedTransaction)
     const hexTx = hexlify(signedTransactionResolved);
-    let tx: any = parse(signedTransactionResolved); // this infers txn parameter from signed parameters, but there is an issue with deriving the right "from" from the signature and raw transaction
+    const tx: any = parse(signedTransactionResolved); // this infers txn parameter from signed parameters, but there is an issue with deriving the right "from" from the signature and raw transaction
     if (tx.confirmations == null) { tx.confirmations = 0; }
     const blockNumber = await this._getInternalBlockNumber(100 + 2 * this.pollingInterval);
     try {
@@ -154,8 +154,8 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
         }
         return this._wrapTransaction(tx, hash, blockNumber);
     } catch (error) {
-        (<any>error).transaction = tx;
-        (<any>error).transactionHash = tx.hash;
+        (error as any).transaction = tx;
+        (error as any).transactionHash = tx.hash;
         throw error;
     }
   }
@@ -171,18 +171,18 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
         const hash = await this.perform("sendTransaction", { signedTransaction: hexTx });
         return this._wrapTransaction(tx, hash, blockNumber);
     } catch (error) {
-        (<any>error).transaction = tx;
-        (<any>error).transactionHash = tx.hash;
+        (error as any).transaction = tx;
+        (error as any).transactionHash = tx.hash;
         throw error;
     }
   }
 
-  prepareRequest(method: string, params: any): [string, Array<any>] {
+  prepareRequest(method: string, params: any): [string, any[]] {
     switch (method) {
       case 'sendRawPrivateTransaction':
         const args: any = { privateFor: params.privateFor };
         if (params.privacyFlag) {
-          args['privacyFlag'] = params.privacyFlag;
+          args.privacyFlag = params.privacyFlag;
         }
         return ['eth_sendRawPrivateTransaction', [params.signedTransaction, args]];
       case 'sendPrivateTransaction':
@@ -223,10 +223,10 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
     }
   }
 
-  send(method: string, params: Array<any>): Promise<any> {
+  send(method: string, params: any[]): Promise<any> {
     const request = {
-      method: method,
-      params: params,
+      method,
+      params,
       id: this._nextId++,
       jsonrpc: '2.0',
     };
@@ -248,7 +248,7 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
       (result) => {
         this.emit('debug', {
           action: 'response',
-          request: request,
+          request,
           response: result,
           provider: this,
         });
@@ -258,8 +258,8 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
       (error) => {
         this.emit('debug', {
           action: 'response',
-          error: error,
-          request: request,
+          error,
+          request,
           provider: this,
         });
 
@@ -282,7 +282,7 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
     transactionRequest: TransactionRequest,
     privacyOptions: PrivacyOptions,
   ): PrivateTransaction {
-    const result = <PrivateTransaction>transactionRequest;
+    const result = transactionRequest as PrivateTransaction;
     const privateFor =
       typeof privacyOptions.privateFor === 'string' ? [privacyOptions.privateFor] : privacyOptions.privateFor;
     result.privateFor = privateFor;
@@ -531,7 +531,7 @@ export class PrivateJsonRpcSigner extends Signer implements PrivateSigner {
     if (transaction.from != null) {
       delete transaction.from;
     }
-    const utx = <UnsignedTransaction>transaction;
+    const utx = transaction as UnsignedTransaction;
 
     // TODO(rl): to remove axios and switch to default ethers web implementation
     let sig;
@@ -548,7 +548,7 @@ export class PrivateJsonRpcSigner extends Signer implements PrivateSigner {
       });
     }
 
-    if (sig == undefined) throw 'Nil response from external signer';
+    if (sig == undefined) throw new Error('Nil response from external signer');
     logger.debug('Signature ::', sig.data);
 
     return serializePublic(utx, {
@@ -570,7 +570,7 @@ export class PrivateJsonRpcSigner extends Signer implements PrivateSigner {
     if (transaction.chainId != null) {
       delete transaction.chainId; // only pass in chainId for public transactions, this forces V in signature to be 37/38
     }
-    const utx = <UnsignedTransaction>transaction;
+    const utx = transaction as UnsignedTransaction;
 
     // TODO(rl): to remove axios and switch to default ethers web implementation
     let sig;
@@ -586,7 +586,7 @@ export class PrivateJsonRpcSigner extends Signer implements PrivateSigner {
       });
     }
 
-    if (sig == undefined) throw 'Nil response from external signer';
+    if (sig == undefined) throw new Error('Nil response from external signer');
     logger.debug('Signature ::', sig.data);
 
     return serialize(utx, {
@@ -604,7 +604,7 @@ export class PrivateJsonRpcSigner extends Signer implements PrivateSigner {
     const from = tx.from;
     // submit transaction data to tessera
     if (!tx.data) {
-      throw 'Transaction has no data to sign';
+      throw new Error('Transaction has no data to sign');
     }
     const tesseraHash = await this.provider.getTesseraHash(tx.data);
     logger.debug('Tessera hash ::', tesseraHash);
@@ -622,7 +622,7 @@ export class PrivateJsonRpcSigner extends Signer implements PrivateSigner {
   async sendTransaction(transaction: Deferrable<PrivateTransactionRequest>): Promise<TransactionResponse> {
     this._checkProvider('sendTransaction');
     const transactionResolved = await resolveProperties(transaction);
-    const transactionRequest = <TransactionRequest>transactionResolved;
+    const transactionRequest = transactionResolved as TransactionRequest;
     let privateFor;
     if ('privateFor' in transactionRequest) {
       privateFor = transactionResolved.privateFor;

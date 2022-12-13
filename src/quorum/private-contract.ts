@@ -622,7 +622,7 @@ export class PrivateBaseContract {
   // Subclasses can override this to gracefully recover
   // from parse errors if they wish
   _wrapEvent(runningEvent: RunningEvent, log: Log, listener: Listener | null): Event {
-    const event = <Event>deepCopy(log);
+    const event = deepCopy(log) as Event;
 
     event.removeListener = () => {
       if (!listener) {
@@ -698,7 +698,7 @@ export class PrivateBaseContract {
     event: EventFilter | string,
     fromBlockOrBlockhash?: BlockTag | string,
     toBlock?: BlockTag,
-  ): Promise<Array<Event>> {
+  ): Promise<Event[]> {
     const runningEvent = this._getRunningEvent(event);
     const filter = shallowCopy(runningEvent.filter);
 
@@ -706,10 +706,10 @@ export class PrivateBaseContract {
       if (toBlock != null) {
         logger.throwArgumentError('cannot specify toBlock with blockhash', 'toBlock', toBlock);
       }
-      (<FilterByBlockHash>filter).blockHash = fromBlockOrBlockhash;
+      (filter as FilterByBlockHash).blockHash = fromBlockOrBlockhash;
     } else {
-      (<Filter>filter).fromBlock = fromBlockOrBlockhash != null ? fromBlockOrBlockhash : 0;
-      (<Filter>filter).toBlock = toBlock != null ? toBlock : 'latest';
+      (filter as Filter).fromBlock = fromBlockOrBlockhash != null ? fromBlockOrBlockhash : 0;
+      (filter as Filter).toBlock = toBlock != null ? toBlock : 'latest';
     }
 
     return this.provider!.getLogs(filter!).then((logs) => {
@@ -753,14 +753,14 @@ export class PrivateBaseContract {
     return this._getRunningEvent(eventName).listenerCount();
   }
 
-  listeners(eventName?: EventFilter | string): Array<Listener> {
+  listeners(eventName?: EventFilter | string): Listener[] {
     if (!this.provider) {
       return [];
     }
 
     if (eventName == null) {
-      const result: Array<Listener> = [];
-      for (let tag in this._runningEvents) {
+      const result: Listener[] = [];
+      for (const tag in this._runningEvents) {
         this._runningEvents[tag].listeners().forEach((listener) => {
           result.push(listener);
         });
@@ -829,7 +829,7 @@ function buildCall(contract: PrivateContract, fragment: FunctionFragment, collap
 
   return async function (...args: any[]): Promise<any> {
     // Extract the "blockTag" override if present
-    let blockTag = undefined;
+    let blockTag;
     if (args.length === fragment.inputs.length + 1 && typeof args[args.length - 1] === 'object') {
       const overrides = shallowCopy(args.pop());
       if (overrides.blockTag != null) {
@@ -898,8 +898,8 @@ function buildSend(contract: PrivateContract, fragment: FunctionFragment): Contr
       await contract._deployed();
     }
 
-    const privateSigner = <PrivateSigner>contract.signer;
-    let privacyOptions: any = {};
+    const privateSigner = contract.signer as PrivateSigner;
+    const privacyOptions: any = {};
     if (args.length > 0 && args.slice(-1)) {
       const last = args[args.length - 1];
       if (typeof last === 'object' && 'privateFor' in last) {
@@ -985,7 +985,7 @@ async function populateTransaction(
   // The ABI coded transaction
   const data = contract.interface.encodeFunctionData(fragment, resolved.args);
   const tx: PopulatedTransaction = {
-    data: data,
+    data,
     to: resolved.address,
   };
 
@@ -1077,7 +1077,7 @@ async function populateTransaction(
 
   // Make sure there are no stray overrides, which may indicate a
   // typo or using an unsupported key.
-  const leftovers = Object.keys(overrides).filter((key) => (<any>overrides)[key] != null);
+  const leftovers = Object.keys(overrides).filter((key) => (overrides as any)[key] != null);
   if (leftovers.length) {
     logger.throwError(
       `cannot override ${leftovers.map((l) => JSON.stringify(l)).join(',')}`,
@@ -1097,7 +1097,7 @@ function addContractWait(contract: PrivateContract, tx: TransactionResponse) {
   tx.wait = (confirmations?: number) => {
     return wait(confirmations).then((receipt: ContractReceipt) => {
       receipt.events = receipt.logs.map((log) => {
-        let event: Event = <Event>deepCopy(log);
+        const event: Event = deepCopy(log) as Event;
         let parsed: LogDescription | null = null;
         try {
           parsed = contract.interface.parseLog(log);
@@ -1166,7 +1166,7 @@ async function resolveName(resolver: Signer | Provider, nameOrPromise: string | 
 async function resolveAddresses(
   resolver: Signer | Provider,
   value: any,
-  paramType: ParamType | Array<ParamType>,
+  paramType: ParamType | ParamType[],
 ): Promise<any> {
   if (Array.isArray(paramType)) {
     return await Promise.all(
@@ -1201,7 +1201,7 @@ async function resolveAddresses(
 class RunningEvent {
   readonly tag!: string;
   readonly filter?: EventFilter;
-  private _listeners: Array<{ listener: Listener; once: boolean }>;
+  private _listeners: { listener: Listener; once: boolean }[];
 
   constructor(tag: string, filter: EventFilter | undefined) {
     defineReadOnly(this, 'tag', tag);
@@ -1210,7 +1210,7 @@ class RunningEvent {
   }
 
   addListener(listener: Listener, once: boolean): void {
-    this._listeners.push({ listener: listener, once: once });
+    this._listeners.push({ listener, once });
   }
 
   removeListener(listener: Listener): void {
@@ -1228,7 +1228,7 @@ class RunningEvent {
     this._listeners = [];
   }
 
-  listeners(): Array<Listener> {
+  listeners(): Listener[] {
     return this._listeners.map((i) => i.listener);
   }
 
@@ -1282,13 +1282,13 @@ class FragmentRunningEvent extends RunningEvent {
     address: string,
     contractInterface: Interface,
     fragment: EventFragment,
-    topics?: Array<string | string[]>,
+    topics?: (string | string[])[],
   ) {
     const filter: EventFilter = {
-      address: address,
+      address,
     };
 
-    let topic = contractInterface.getEventTopic(fragment);
+    const topic = contractInterface.getEventTopic(fragment);
     if (topics) {
       if (topic !== topics[0]) {
         logger.throwArgumentError('topic mismatch', 'topics', topics);
@@ -1318,7 +1318,7 @@ class FragmentRunningEvent extends RunningEvent {
       event.args = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
     } catch (error) {
       event.args = undefined;
-      event.decodeError = <Error>error;
+      event.decodeError = (error as Error);
     }
   }
 
@@ -1344,7 +1344,7 @@ class WildcardRunningEvent extends RunningEvent {
   readonly interface!: Interface;
 
   constructor(address: string, contractInterface: Interface) {
-    super('*', { address: address });
+    super('*', { address });
     defineReadOnly(this, 'address', address);
     defineReadOnly(this, 'interface', contractInterface);
   }

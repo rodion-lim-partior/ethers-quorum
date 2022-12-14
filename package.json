@@ -1,6 +1,6 @@
 {
   "name": "ethers-quorum",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Complete Ethereum library and wallet implementation in JavaScript, with support for Quorum",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

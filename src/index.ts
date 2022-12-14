@@ -15,6 +15,7 @@ export { ethers };
 
 export {
   getDefaultPrivateProvider,
+  PrivateContract,
   PrivateContractFactory,
   PrivateJsonRpcProvider,
   PrivateJsonRpcSigner,

@@ -1,4 +1,4 @@
-import { PrivateContractFactory } from './private-contract';
+import { PrivateContract, PrivateContractFactory } from './private-contract';
 import {
   getDefaultPrivateProvider,
   PrivateJsonRpcProvider,
@@ -12,6 +12,7 @@ import { PrivateWallet } from './private-wallet';
 
 export {
   getDefaultPrivateProvider,
+  PrivateContract,
   PrivateContractFactory,
   PrivateJsonRpcProvider,
   PrivateJsonRpcSigner,

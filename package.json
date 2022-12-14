@@ -14,10 +14,10 @@
     "lint:fix": "tslint --fix \"src/**/*.ts\"",
     "postversion": "git push && git push --tags",
     "prepare": "npm run build",
-    "prepublishOnly": "echo \"Pre-publish temporarily disabled\" && exit && npm test && npm run lint",
-    "preversion": "echo \"Pre-version temporarily disabled\" && exit && npm run lint",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "version": "npm run format ** git add -A src"
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint",
+    "test": "echo \"Tests temporarily disabled\" && exit && echo \"Error: no test specified\" && exit 1",
+    "version": "npm run format && git add -A src"
   },
   "repository": {
     "type": "git",

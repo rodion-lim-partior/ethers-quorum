@@ -105,7 +105,7 @@ function _serialize(transaction: UnsignedTransaction, signature?: SignatureLike)
 
   const raw: (string | Uint8Array)[] = [];
 
-  transactionFields.forEach(function (fieldInfo) {
+  transactionFields.forEach((fieldInfo) => {
     let value = (transaction as any)[fieldInfo.name] || [];
     const options: DataOptions = {};
     if (fieldInfo.numeric) {

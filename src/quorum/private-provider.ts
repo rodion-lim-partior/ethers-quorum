@@ -245,7 +245,7 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
     }
 
     const result = fetchJson(this.connection, JSON.stringify(request), getResult).then(
-      (result) => {
+      (res) => {
         this.emit('debug', {
           action: 'response',
           request,
@@ -253,7 +253,7 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
           provider: this,
         });
 
-        return result;
+        return res;
       },
       (error) => {
         this.emit('debug', {
@@ -336,9 +336,11 @@ function spelunk(value: any, requireData: boolean): null | { message: string; da
   // Spelunk further...
   if (typeof value === 'object') {
     for (const key in value) {
-      const result = spelunk(value[key], requireData);
-      if (result) {
-        return result;
+      if (value.hasOwnProperty(key)) {
+        const result = spelunk(value[key], requireData);
+        if (result) {
+          return result;
+        }
       }
     }
     return null;
@@ -548,7 +550,7 @@ export class PrivateJsonRpcSigner extends Signer implements PrivateSigner {
       });
     }
 
-    if (sig == undefined) throw new Error('Nil response from external signer');
+    if (sig === undefined) throw new Error('Nil response from external signer');
     logger.debug('Signature ::', sig.data);
 
     return serializePublic(utx, {
@@ -586,7 +588,7 @@ export class PrivateJsonRpcSigner extends Signer implements PrivateSigner {
       });
     }
 
-    if (sig == undefined) throw new Error('Nil response from external signer');
+    if (sig === undefined) throw new Error('Nil response from external signer');
     logger.debug('Signature ::', sig.data);
 
     return serialize(utx, {

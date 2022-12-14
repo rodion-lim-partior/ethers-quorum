@@ -504,7 +504,7 @@ export class PrivateBaseContract {
 
     const tx: Deferrable<TransactionRequest> = shallowCopy(overrides || {});
 
-    ['from', 'to'].forEach(function (key) {
+    ['from', 'to'].forEach((key) => {
       if ((tx as any)[key] == null) {
         return;
       }
@@ -761,9 +761,11 @@ export class PrivateBaseContract {
     if (eventName == null) {
       const result: Listener[] = [];
       for (const tag in this._runningEvents) {
-        this._runningEvents[tag].listeners().forEach((listener) => {
-          result.push(listener);
-        });
+        if (this._runningEvents.hasOwnProperty(tag)) {
+          this._runningEvents[tag].listeners().forEach((listener) => {
+            result.push(listener);
+          });
+        }
       }
       return result;
     }
@@ -778,9 +780,11 @@ export class PrivateBaseContract {
 
     if (eventName == null) {
       for (const tag in this._runningEvents) {
-        const runningEvent = this._runningEvents[tag];
-        runningEvent.removeAllListeners();
-        this._checkRunningEvents(runningEvent);
+        if (this._runningEvents.hasOwnProperty(tag)) {
+          const event = this._runningEvents[tag];
+          event.removeAllListeners();
+          this._checkRunningEvents(event);
+        }
       }
       return this;
     }
@@ -827,7 +831,7 @@ function buildDefault(
 function buildCall(contract: PrivateContract, fragment: FunctionFragment, collapseSimple: boolean): ContractFunction {
   const signerOrProvider = contract.signer || contract.provider;
 
-  return async function (...args: any[]): Promise<any> {
+  return async (...args: any[]): Promise<any> => {
     // Extract the "blockTag" override if present
     let blockTag;
     if (args.length === fragment.inputs.length + 1 && typeof args[args.length - 1] === 'object') {
@@ -867,7 +871,7 @@ function buildCall(contract: PrivateContract, fragment: FunctionFragment, collap
 
 function buildEstimate(contract: PrivateContract, fragment: FunctionFragment): ContractFunction<BigNumber> {
   const signerOrProvider = contract.signer || contract.provider;
-  return async function (...args: any[]): Promise<BigNumber> {
+  return async (...args: any[]): Promise<BigNumber> => {
     if (!signerOrProvider) {
       logger.throwError('estimate require a provider or signer', Logger.errors.UNSUPPORTED_OPERATION, {
         operation: 'estimateGas',
@@ -880,13 +884,13 @@ function buildEstimate(contract: PrivateContract, fragment: FunctionFragment): C
 }
 
 function buildPopulate(contract: PrivateContract, fragment: FunctionFragment): ContractFunction<PopulatedTransaction> {
-  return function (...args: any[]): Promise<PopulatedTransaction> {
+  return (...args: any[]): Promise<PopulatedTransaction> => {
     return populateTransaction(contract, fragment, args);
   };
 }
 
 function buildSend(contract: PrivateContract, fragment: FunctionFragment): ContractFunction<TransactionResponse> {
-  return async function (...args: any[]): Promise<TransactionResponse> {
+  return async (...args: any[]): Promise<TransactionResponse> => {
     if (!contract.signer) {
       logger.throwError('sending a transaction requires a signer', Logger.errors.UNSUPPORTED_OPERATION, {
         operation: 'sendTransaction',
@@ -914,7 +918,7 @@ function buildSend(contract: PrivateContract, fragment: FunctionFragment): Contr
 
     const txRequest = await populateTransaction(contract, fragment, args);
 
-    let method: Function;
+    let method: (...a: any) => Promise<TransactionResponse>;
     const methodParams = [txRequest];
     if (privacyOptions.privateFor) {
       // Private contract
@@ -1028,7 +1032,7 @@ async function populateTransaction(
     // similar logic to the ContractFactory.
     let intrinsic = 21000;
     const bytes = arrayify(data);
-    for (let i = 0; i < bytes.length; i++) {
+    for (const i of Array(bytes.length).keys()) {
       intrinsic += 4;
       if (bytes[i]) {
         intrinsic += 64;
@@ -1170,8 +1174,8 @@ async function resolveAddresses(
 ): Promise<any> {
   if (Array.isArray(paramType)) {
     return await Promise.all(
-      paramType.map((paramType, index) => {
-        return resolveAddresses(resolver, Array.isArray(value) ? value[index] : value[paramType.name], paramType);
+      paramType.map((type, index) => {
+        return resolveAddresses(resolver, Array.isArray(value) ? value[index] : value[type.name], type);
       }),
     );
   }
@@ -1278,12 +1282,7 @@ class FragmentRunningEvent extends RunningEvent {
   readonly interface!: Interface;
   readonly fragment!: EventFragment;
 
-  constructor(
-    address: string,
-    contractInterface: Interface,
-    fragment: EventFragment,
-    topics?: (string | string[])[],
-  ) {
+  constructor(address: string, contractInterface: Interface, fragment: EventFragment, topics?: (string | string[])[]) {
     const filter: EventFilter = {
       address,
     };
@@ -1318,7 +1317,7 @@ class FragmentRunningEvent extends RunningEvent {
       event.args = this.interface.decodeEventLog(this.fragment, event.data, event.topics);
     } catch (error) {
       event.args = undefined;
-      event.decodeError = (error as Error);
+      event.decodeError = error as Error;
     }
   }
 

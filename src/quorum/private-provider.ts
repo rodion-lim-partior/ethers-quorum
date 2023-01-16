@@ -87,7 +87,7 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
     }
     const encodedFunctionHash = Buffer.from(data.slice(2), 'hex').toString('base64');
     logger.debug('POST tessera ::', encodedFunctionHash);
-    const url = new URL("storeraw", this._tesseraUrl);
+    const url = new URL('storeraw', this._tesseraUrl);
     const res = await axios.post(
       url.toString(),
       { payload: encodedFunctionHash },
@@ -539,7 +539,7 @@ export class PrivateJsonRpcSigner extends Signer implements PrivateSigner {
     // TODO(rl): to remove axios and switch to default ethers web implementation
     let sig;
     try {
-      const url = new URL(this.signerSignPublicTxnRoute || "", this.signerUrl)
+      const url = new URL(this.signerSignPublicTxnRoute || '', this.signerUrl);
       sig = await axios.post(url.toString(), {
         unsignedTxnHash: serializePublic(utx),
         sender: (this._address && this._address.toLowerCase()) || this._address, // External signer should be case insensitive or take all lower case,
@@ -579,7 +579,7 @@ export class PrivateJsonRpcSigner extends Signer implements PrivateSigner {
     // TODO(rl): to remove axios and switch to default ethers web implementation
     let sig;
     try {
-      const url = new URL(this.signerSignPrivateTxnRoute || "", this.signerUrl)
+      const url = new URL(this.signerSignPrivateTxnRoute || '', this.signerUrl);
       sig = await axios.post(url.toString(), {
         unsignedTxnHash: serialize(utx),
         sender: (this._address && this._address.toLowerCase()) || this._address, // External signer should be case insensitive or take all lower case

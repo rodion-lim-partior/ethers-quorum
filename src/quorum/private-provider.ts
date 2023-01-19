@@ -145,7 +145,7 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
     if (tx.confirmations == null) { tx.confirmations = 0; }
     const blockNumber = await this._getInternalBlockNumber(100 + 2 * this.pollingInterval);
     try {
-        const hash = await this.perform("sendRawPrivateTransaction", { signedTransaction: hexTx, privateFor: privacyOptions.privateFor });
+        const hash = await this.perform("sendRawPrivateTransaction", { signedTransaction: hexTx, privateFor: privacyOptions.privateFor, privacyFlag: privacyOptions?.privacyFlag });
         // back populate txn data since quorum deviates from ethereum -> workaround hack, better to get parse in transactions.ts working
         if (tx.from) {
           tx.from = from;

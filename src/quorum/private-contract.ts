@@ -152,6 +152,10 @@ export class PrivateContractFactory {
       if (typeof last === 'object' && 'privateFor' in last) {
         privacyOptions.privateFor = last.privateFor;
         delete last.privateFor;
+        if ('privacyFlag' in last) {
+          privacyOptions.privacyFlag = last.privacyFlag;
+          delete last.privacyFlag;
+        }
       }
     }
 

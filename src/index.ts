@@ -1,6 +1,7 @@
 'use strict';
 
 import * as ethers from 'ethers';
+import * as ethers_quorum from './quorum';
 
 /* tslint:disable:no-empty */
 try {
@@ -11,8 +12,6 @@ try {
   }
 } catch (error) {}
 
-export { ethers };
-
 export {
   getDefaultPrivateProvider,
   PrivateContract,
@@ -22,6 +21,15 @@ export {
   PrivateProvider,
   PrivateWallet,
 } from './quorum';
+
+(ethers as any).PrivateWallet = ethers_quorum.PrivateWallet;
+(ethers as any).PrivateJsonRpcProvider = ethers_quorum.PrivateJsonRpcProvider;
+(ethers as any).PrivateJsonRpcSigner = ethers_quorum.PrivateJsonRpcSigner;
+(ethers as any).PrivateContract = ethers_quorum.PrivateContract;
+(ethers as any).PrivateContractFactory = ethers_quorum.PrivateContractFactory;
+(ethers as any).getDefaultPrivateProvider = ethers_quorum.getDefaultPrivateProvider;
+
+export { ethers };
 
 export {
   Signer,

@@ -14,10 +14,11 @@ const main = async () => {
     provider,
   ); // don't use this in a production env
   const contract = new ethers.PrivateContractFactory(obj.abi, obj.bytecode, wallet);
-  const contractInstance = await contract.deploy({
+  const txnOps = {
     privateFor: ['BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo='],
     privacyFlag: 1,
-  });
+  }
+  const contractInstance = await contract.deploy(txnOps);
   console.log('Contract', contractInstance);
   console.log('Contract address ::', contractInstance.address);
   console.log('Deployed transaction ::', contractInstance.deployTransaction);

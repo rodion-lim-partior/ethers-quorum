@@ -147,10 +147,11 @@ export class PrivateContractFactory {
 
   async deploy(...args: any[]): Promise<PrivateContract> {
     const privacyOptions: PrivacyOptions = {} as any;
+    let last: any;
     if (args.length > 0 && args.slice(-1)) {
-      args = [...args];
-      const last = args[args.length - 1];
+      last = args[args.length - 1];
       if (typeof last === 'object' && 'privateFor' in last) {
+        last = { ...last };
         privacyOptions.privateFor = last.privateFor;
         delete last.privateFor;
         if ('privacyFlag' in last) {
@@ -164,7 +165,8 @@ export class PrivateContractFactory {
 
     // If 1 extra parameter was passed in, it contains overrides
     if (args.length === this.interface.deploy.inputs.length + 1) {
-      overrides = args.pop();
+      args.pop();
+      overrides = last;
     }
 
     // Make sure the call matches the constructor signature
@@ -909,10 +911,11 @@ function buildSend(contract: PrivateContract, fragment: FunctionFragment): Contr
 
     const privateSigner = contract.signer as PrivateSigner;
     const privacyOptions: any = {};
+    let last: any;
     if (args.length > 0 && args.slice(-1)) {
-      args = [...args];
-      const last = args[args.length - 1];
+      last = args[args.length - 1];
       if (typeof last === 'object' && 'privateFor' in last) {
+        last = { ...last };
         privacyOptions.privateFor = last.privateFor;
         delete last.privateFor;
         if ('privacyFlag' in last) {

@@ -1,3 +1,5 @@
+// Run this script in the same directory
+
 const ethers = require('../../lib/index.js'); // npm run build to generate source code
 const { getAbiBytecode } = require('./utilities/loader.js');
 

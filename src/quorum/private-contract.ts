@@ -1087,6 +1087,7 @@ async function populateTransaction(
   delete overrides.ccipReadEnabled;
 
   delete overrides.privateFor;
+  delete overrides.privacyFlag;
 
   // Make sure there are no stray overrides, which may indicate a
   // typo or using an unsupported key.

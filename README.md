@@ -43,8 +43,10 @@ async function main() {
     parseInt(process.env.network),
     process.env.tesseraUrl
   );
-  const wallet = new PrivateWallet(process.env.pk, provider);
-  const contract = new PrivateContractFactory(obj.abi, obj.bytecode, wallet);
+  const signer = new PrivateWallet(process.env.pk, provider);
+  // const signer = provider.getPrivateSigner('0xf0E2Db6C8dC6c681bB5D6aD121A107f300e9B2b5', 'http://localhost:8630'); // alternative way to use external signer or unlocked geth keys
+  // signer.setDefaultSendRaw(false); // set to false use unlocked geth keys instead of external signer
+  const contract = new PrivateContractFactory(obj.abi, obj.bytecode, signer);
   const contractInstance = await contract.deploy({
     privateFor: ["BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo="],
   });

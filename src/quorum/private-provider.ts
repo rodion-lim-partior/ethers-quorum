@@ -3,7 +3,7 @@ import https from 'https';
 import { TransactionRequest, TransactionResponse } from '@ethersproject/abstract-provider';
 import { Signer } from '@ethersproject/abstract-signer';
 import { Networkish } from '@ethersproject/networks';
-import { getDefaultProvider, JsonRpcProvider, Provider } from '@ethersproject/providers';
+import { getDefaultProvider, JsonRpcProvider, JsonRpcSigner, Provider } from '@ethersproject/providers';
 import { serialize as serializePublic, Transaction, UnsignedTransaction } from '@ethersproject/transactions';
 import { ConnectionInfo, fetchJson } from '@ethersproject/web';
 import { BigNumber } from 'ethers';
@@ -475,6 +475,7 @@ export class PrivateJsonRpcSigner extends Signer implements PrivateSigner {
   readonly signerSignPrivateTxnRoute?: string; // url route to sign private transactions
   readonly signerSignPublicTxnRoute?: string; // url route to sign public transactions
   readonly provider!: PrivateJsonRpcProvider;
+  readonly publicSigner!: JsonRpcSigner; // original ethers public signer
 
   constructor(
     provider: PrivateJsonRpcProvider,
@@ -488,6 +489,7 @@ export class PrivateJsonRpcSigner extends Signer implements PrivateSigner {
     defineReadOnly(this, 'signerUrl', signerUrl);
     defineReadOnly(this, 'signerSignPrivateTxnRoute', signerSignPrivateTxnRoute || 'signer/private/hash');
     defineReadOnly(this, 'signerSignPublicTxnRoute', signerSignPublicTxnRoute || 'signer/public/hash');
+    defineReadOnly(this, 'publicSigner', provider.getSigner(addressOrIndex));
 
     if (addressOrIndex == null) {
       addressOrIndex = 0;
@@ -624,6 +626,7 @@ export class PrivateJsonRpcSigner extends Signer implements PrivateSigner {
     const txn = await this.populateTransaction(transaction);
     return this.provider.sendPrivateTransaction(txn, privacyOptions);
   }
+
   async sendTransaction(transaction: Deferrable<PrivateTransactionRequest>): Promise<TransactionResponse> {
     this._checkProvider('sendTransaction');
     const transactionResolved = await resolveProperties(transaction);
@@ -640,9 +643,15 @@ export class PrivateJsonRpcSigner extends Signer implements PrivateSigner {
       }
       return this.sendPrivateTransaction(transactionRequest, privacyOptions);
     } else {
-      const tx = await this.populateTransaction(transactionRequest);
-      const signedTx = await this.signTransaction(tx);
-      return await this.provider.sendTransaction(signedTx);
+      // Public transaction branch
+      if (this.defaultSendRaw) {
+        const tx = await this.populateTransaction(transactionRequest);
+        const signedTx = await this.signTransaction(tx);
+        return await this.provider.sendTransaction(signedTx);
+      } else {
+        const txn = await this.populateTransaction(transactionRequest);
+        return await this.publicSigner.sendTransaction(txn);
+      }
     }
   }
   // TODO(rl): overwrite this so that we can override default gasLimit

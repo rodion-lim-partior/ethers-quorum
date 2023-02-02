@@ -4,11 +4,11 @@ const ethers = require('../../lib/index.js'); // npm run build to generate sourc
 const { getAbiBytecode } = require('./utilities/loader.js');
 
 /**
- * Deploy and interact with private contracts via Private Signer/Wallet
+ * Deploy and interact with public contracts via Private Signer/Wallet
  */
 const main = async () => {
-  // const contractInstance = await deploy_with_private_signer(); // implementation can be switched between deploy_with_private_signer() and deploy_with_private_wallet()
-  const contractInstance = await deploy_with_private_wallet();
+  const contractInstance = await deploy_with_private_signer(); // implementation can be switched between deploy_with_private_signer() and deploy_with_private_wallet()
+  // const contractInstance = await deploy_with_private_wallet();
   await interactViaContractMethod(contractInstance);
 };
 
@@ -27,11 +27,7 @@ const deploy_with_private_wallet = async () => {
     provider,
   ); // don't use this in a production env
   const contract = new ethers.PrivateContractFactory(obj.abi, obj.bytecode, wallet);
-  const txnOps = {
-    privateFor: ['BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo='],
-    privacyFlag: 1,
-  };
-  const contractInstance = await contract.deploy(txnOps);
+  const contractInstance = await contract.deploy();
   console.log('Contract', contractInstance);
   console.log('Contract address ::', contractInstance.address);
   console.log('Deployed transaction ::', contractInstance.deployTransaction);
@@ -51,13 +47,12 @@ const deploy_with_private_signer = async (setDefaultSendRaw = false) => {
   );
   const provider = new ethers.PrivateJsonRpcProvider('http://localhost:20000', 1337, 'http://localhost:9081'); // quorum, chainID, tessera
   const signer = provider.getPrivateSigner('0xf0E2Db6C8dC6c681bB5D6aD121A107f300e9B2b5', 'http://localhost:8630');
+
+
+
   signer.setDefaultSendRaw(setDefaultSendRaw); // set to false use unlocked geth keys
   const contract = new ethers.PrivateContractFactory(obj.abi, obj.bytecode, signer);
-  const txnOps = {
-    privateFor: ['BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo='],
-    privacyFlag: 1,
-  };
-  const contractInstance = await contract.deploy(txnOps);
+  const contractInstance = await contract.deploy();
   console.log('Contract', contractInstance);
   console.log('Contract address ::', contractInstance.address);
   console.log('Deployed transaction ::', contractInstance.deployTransaction);
@@ -69,8 +64,6 @@ const interactViaContractMethod = async (contractInstance) => {
   console.log('Storing value in simple storage contract');
   await contractInstance.store(35, {
     gasLimit: 100_000_000,
-    privateFor: ['BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo='],
-    privacyFlag: 1,
   });
   await new Promise((r) => setTimeout(r, 4000)); // wait for txn to populate
   console.log(`Stored value :: ${await contractInstance.retrieve()}`);

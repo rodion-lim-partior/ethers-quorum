@@ -28,6 +28,7 @@ const deploy_with_private_wallet = async () => {
   ); // don't use this in a production env
   const contract = new ethers.PrivateContractFactory(obj.abi, obj.bytecode, wallet);
   const txnOps = {
+    gasLimit: 100_000_000,
     privateFor: ['BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo='],
     privacyFlag: 1,
   };
@@ -54,6 +55,7 @@ const deploy_with_private_signer = async (setDefaultSendRaw = false) => {
   signer.setDefaultSendRaw(setDefaultSendRaw); // set to false use unlocked geth keys
   const contract = new ethers.PrivateContractFactory(obj.abi, obj.bytecode, signer);
   const txnOps = {
+    gasLimit: 100_000_000,
     privateFor: ['BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo='],
     privacyFlag: 1,
   };
@@ -67,12 +69,12 @@ const deploy_with_private_signer = async (setDefaultSendRaw = false) => {
 
 const interactViaContractMethod = async (contractInstance) => {
   console.log('Storing value in simple storage contract');
-  await contractInstance.store(35, {
+  const resp = await contractInstance.store(35, {
     gasLimit: 100_000_000,
     privateFor: ['BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo='],
     privacyFlag: 1,
   });
-  await new Promise((r) => setTimeout(r, 4000)); // wait for txn to populate
+  await resp.wait();
   console.log(`Stored value :: ${await contractInstance.retrieve()}`);
 };
 

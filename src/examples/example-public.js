@@ -48,8 +48,6 @@ const deploy_with_private_signer = async (setDefaultSendRaw = false) => {
   const provider = new ethers.PrivateJsonRpcProvider('http://localhost:20000', 1337, 'http://localhost:9081'); // quorum, chainID, tessera
   const signer = provider.getPrivateSigner('0xf0E2Db6C8dC6c681bB5D6aD121A107f300e9B2b5', 'http://localhost:8630');
 
-
-
   signer.setDefaultSendRaw(setDefaultSendRaw); // set to false use unlocked geth keys
   const contract = new ethers.PrivateContractFactory(obj.abi, obj.bytecode, signer);
   const contractInstance = await contract.deploy();
@@ -62,10 +60,10 @@ const deploy_with_private_signer = async (setDefaultSendRaw = false) => {
 
 const interactViaContractMethod = async (contractInstance) => {
   console.log('Storing value in simple storage contract');
-  await contractInstance.store(35, {
+  const resp = await contractInstance.store(35, {
     gasLimit: 100_000_000,
   });
-  await new Promise((r) => setTimeout(r, 4000)); // wait for txn to populate
+  await resp.wait(); // wait for txn to populate
   console.log(`Stored value :: ${await contractInstance.retrieve()}`);
 };
 

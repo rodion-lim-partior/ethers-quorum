@@ -621,7 +621,6 @@ export class PrivateJsonRpcSigner extends Signer implements PrivateSigner {
     return this.provider.sendRawPrivateTransaction(signedTx, from!, privacyOptions);
   }
   async sendPrivateTransaction(transaction: Deferrable<TransactionRequest>, privacyOptions: PrivacyOptions) {
-    // TODO(rl): first transaction with nonce 0 throws error
     this._checkProvider('sendPrivateTransaction');
     const txn = await this.populateTransaction(transaction);
     return this.provider.sendPrivateTransaction(txn, privacyOptions);

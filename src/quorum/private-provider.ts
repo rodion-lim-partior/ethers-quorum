@@ -296,7 +296,7 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
     if (transactionRequest.value) {
       result.value = hexValue(transactionRequest.value);
     }
-    if (transactionRequest.nonce) {
+    if (transactionRequest.nonce || transactionRequest.nonce === 0) {
       result.nonce = hexValue(transactionRequest.nonce);
     }
     const fieldsToRemove = ['chainId', 'gasPrice', 'gasLimit', 'type'];

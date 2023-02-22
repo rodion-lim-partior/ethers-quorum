@@ -145,7 +145,7 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
     if (tx.confirmations == null) { tx.confirmations = 0; }
     const blockNumber = await this._getInternalBlockNumber(100 + 2 * this.pollingInterval);
     try {
-        const hash = await this.perform("sendRawPrivateTransaction", { signedTransaction: hexTx, privateFor: privacyOptions.privateFor, privacyFlag: privacyOptions?.privacyFlag });
+        const hash = await this.perform("sendRawPrivateTransaction", { signedTransaction: hexTx, privateFor: privacyOptions.privateFor, privacyFlag: privacyOptions?.privacyFlag, mandatoryFor: privacyOptions?.mandatoryFor });
         // back populate txn data since quorum deviates from ethereum -> workaround hack, better to get parse in transactions.ts working
         if (tx.from) {
           tx.from = from;
@@ -184,6 +184,9 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
         const args: any = { privateFor: params.privateFor };
         if (params.privacyFlag) {
           args.privacyFlag = params.privacyFlag;
+        }
+        if (params.mandatoryFor) {
+          args.mandatoryFor = params.mandatoryFor;
         }
         return ['eth_sendRawPrivateTransaction', [params.signedTransaction, args]];
       case 'sendPrivateTransaction':
@@ -289,6 +292,10 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
     result.privateFor = privateFor;
     if (privacyOptions.privacyFlag) {
       result.privacyFlag = privacyOptions.privacyFlag;
+    }
+    if (privacyOptions.mandatoryFor) {
+      result.mandatoryFor =
+        typeof privacyOptions.mandatoryFor === 'string' ? [privacyOptions.mandatoryFor] : privacyOptions.mandatoryFor;
     }
     if (transactionRequest.gasLimit) {
       result.gas = hexValue(transactionRequest.gasLimit);

@@ -37,6 +37,7 @@ export enum PrivacyFlag {
 export interface PrivacyOptions {
   privateFor: string | string[];
   privacyFlag?: PrivacyFlag;
+  mandatoryFor?: string | string[];
 }
 
 export interface PrivateTransaction {
@@ -51,6 +52,7 @@ export interface PrivateTransaction {
   value: string;
   privateFor: string | string[];
   privacyFlag?: PrivacyFlag;
+  mandatoryFor?: string | string[];
 }
 
 export type PrivateTransactionRequest = {
@@ -76,6 +78,7 @@ export type PrivateTransactionRequest = {
 
   privateFor: string | string[];
   privacyFlag?: PrivacyFlag;
+  mandatoryFor?: string | string[];
 };
 
 const allowedTransactionKeys: { [key: string]: boolean } = {

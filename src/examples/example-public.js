@@ -7,8 +7,8 @@ const { getAbiBytecode } = require('./utilities/loader.js');
  * Deploy and interact with public contracts via Private Signer/Wallet
  */
 const main = async () => {
-  const contractInstance = await deploy_with_private_signer(); // implementation can be switched between deploy_with_private_signer() and deploy_with_private_wallet()
-  // const contractInstance = await deploy_with_private_wallet();
+  // const contractInstance = await deploy_with_private_signer(); // implementation can be switched between deploy_with_private_signer() and deploy_with_private_wallet()
+  const contractInstance = await deploy_with_private_wallet();
   await interactViaContractMethod(contractInstance);
 };
 

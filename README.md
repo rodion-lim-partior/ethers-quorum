@@ -9,7 +9,7 @@ Complete Ethereum library and wallet implementation in JavaScript, with support 
 - Interact with [Quorum](https://github.com/ConsenSys/quorum) blockchain
 - Interact with external signer outside geth
 - Interact with internal signer within geth
-- Specify `privateFor` and `privacyFlag` for private transactions
+- Specify `privateFor`, `privacyFlag` (Optional) and `mandatoryFor` (Optional) for private transactions
 - Don't pass in `privateFor` for public transactions
 - Don't pass in signer URL into `getPrivateSigner` to fallback to unlocked geth keys
 

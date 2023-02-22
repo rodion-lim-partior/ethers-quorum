@@ -43,6 +43,7 @@ export interface ContractReceipt extends TransactionReceipt {
 export interface CallOverrides2 extends CallOverrides {
   privateFor?: string | string[];
   privacyFlag?: PrivacyFlag;
+  mandatoryFor?: string | string[];
 }
 
 type InterfaceFunc = (contractInterface: ContractInterface) => Interface;
@@ -157,6 +158,10 @@ export class PrivateContractFactory {
         if ('privacyFlag' in last) {
           privacyOptions.privacyFlag = last.privacyFlag;
           delete last.privacyFlag;
+        }
+        if ('mandatoryFor' in last) {
+          privacyOptions.mandatoryFor = last.mandatoryFor;
+          delete last.mandatoryFor;
         }
       }
     }
@@ -922,6 +927,10 @@ function buildSend(contract: PrivateContract, fragment: FunctionFragment): Contr
           privacyOptions.privacyFlag = last.privacyFlag;
           delete last.privacyFlag;
         }
+        if ('mandatoryFor' in last) {
+          privacyOptions.mandatoryFor = last.mandatoryFor;
+          delete last.mandatoryFor;
+        }
       }
     }
 
@@ -1088,6 +1097,7 @@ async function populateTransaction(
 
   delete overrides.privateFor;
   delete overrides.privacyFlag;
+  delete overrides.mandatoryFor;
 
   // Make sure there are no stray overrides, which may indicate a
   // typo or using an unsupported key.

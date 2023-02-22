@@ -64,7 +64,7 @@ export class PrivateWallet extends Wallet implements PrivateSigner {
     const transactionResolved = await resolveProperties(transaction);
     const transactionRequest = transactionResolved as TransactionRequest;
     const privacyArgs: any = {};
-    for (const k of ['privateFor', 'privacyFlag']) {
+    for (const k of ['privateFor', 'privacyFlag', 'mandatoryFor']) {
       if (k in transactionRequest) {
         delete transactionRequest[k as keyof TransactionRequest];
         privacyArgs[k] = transactionResolved[k as keyof PrivateTransactionRequest];

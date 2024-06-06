@@ -156,8 +156,8 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
 
   async _getTesseraHash(tesseraHash: string | Promise<string>): Promise<string> {
     tesseraHash = await tesseraHash;
-    if (typeof(tesseraHash) !== "string") {
-        logger.throwArgumentError("invalid tessera hash", "hash", tesseraHash);
+    if (typeof tesseraHash !== 'string') {
+      logger.throwArgumentError('invalid tessera hash', 'hash', tesseraHash);
     }
     return tesseraHash;
   }
@@ -217,8 +217,8 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
         return ['eth_sendRawPrivateTransaction', [params.signedTransaction, args]];
       case 'sendPrivateTransaction':
         return ['eth_sendTransaction', [params.transaction]];
-      case "getQuorumPayload":
-          return [ "eth_getQuorumPayload", [ params.tesseraHash ] ];
+      case 'getQuorumPayload':
+        return ['eth_getQuorumPayload', [params.tesseraHash]];
       default:
         return super.prepareRequest(method, params);
     }

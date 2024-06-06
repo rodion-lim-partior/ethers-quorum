@@ -9,6 +9,7 @@ Complete Ethereum library and wallet implementation in JavaScript, with support 
 - Interact with [Quorum](https://github.com/ConsenSys/quorum) blockchain
 - Interact with external signer outside geth
 - Interact with internal signer within geth
+- Add new getQuorumPayload wrapper in PrivateProvider
 - Specify `privateFor`, `privacyFlag` (Optional) and `mandatoryFor` (Optional) for private transactions
 - Don't pass in `privateFor` for public transactions
 - Don't pass in signer URL into `getPrivateSigner` to fallback to unlocked geth keys
@@ -52,6 +53,10 @@ async function main() {
   console.log('Contract', contractInstance);
   console.log('Contract address ::', contractInstance.address);
   console.log('Deployed transaction ::', contractInstance.deployTransaction);
+
+  console.log('Deployed SHA3-512 hash of encrypted payload from PTM', contractInstance.deployTransaction.data);
+  const unencryptedPayload = await provider.getQuorumPayload(contractInstance.deployTransaction.data);
+  console.log('Unencrypted transaction payload in hex format', unencryptedPayload)
 }
 
 main();

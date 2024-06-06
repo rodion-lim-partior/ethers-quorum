@@ -137,6 +137,32 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
   }
 
   // prettier-ignore
+  async getQuorumPayload(tesseraHash: string | Promise<string>): Promise<string> {
+    await this.getNetwork();
+    const params = await resolveProperties({
+        tesseraHash: this._getTesseraHash(tesseraHash),
+    });
+
+    const result = await this.perform("getQuorumPayload", params);
+    try {
+        return result;
+    } catch (error) {
+        return logger.throwError("bad result from backend", Logger.errors.SERVER_ERROR, {
+            method: "getQuorumPayload",
+            params, result, error
+        });
+    }
+  }
+
+  async _getTesseraHash(tesseraHash: string | Promise<string>): Promise<string> {
+    tesseraHash = await tesseraHash;
+    if (typeof(tesseraHash) !== "string") {
+        logger.throwArgumentError("invalid tessera hash", "hash", tesseraHash);
+    }
+    return tesseraHash;
+  }
+
+  // prettier-ignore
   async sendRawPrivateTransaction(signedTransaction: string | Promise<string>, from: string, privacyOptions: PrivacyOptions): Promise<TransactionResponse> {
     await this.getNetwork();
     const signedTransactionResolved = await Promise.resolve(signedTransaction)
@@ -191,6 +217,8 @@ export class PrivateJsonRpcProvider extends JsonRpcProvider implements PrivatePr
         return ['eth_sendRawPrivateTransaction', [params.signedTransaction, args]];
       case 'sendPrivateTransaction':
         return ['eth_sendTransaction', [params.transaction]];
+      case "getQuorumPayload":
+          return [ "eth_getQuorumPayload", [ params.tesseraHash ] ];
       default:
         return super.prepareRequest(method, params);
     }
@@ -660,6 +688,7 @@ export class PrivateJsonRpcSigner extends Signer implements PrivateSigner {
       }
     }
   }
+
   // TODO(rl): overwrite this so that we can override default gasLimit
   // populateTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionRequest> {}
 }

@@ -38,6 +38,10 @@ const deploy_with_private_wallet = async () => {
   console.log('Contract address ::', contractInstance.address);
   console.log('Deployed transaction ::', contractInstance.deployTransaction);
 
+  console.log('Deployed SHA3-512 hash of encrypted payload from PTM', contractInstance.deployTransaction.data);
+  const unencryptedPayload = await provider.getQuorumPayload(contractInstance.deployTransaction.data);
+  console.log('Unencrypted transaction payload in hex format', unencryptedPayload)
+
   return contractInstance;
 };
 
